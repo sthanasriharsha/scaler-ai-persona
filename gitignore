@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+.vercel/
+
+# Env
+.env
+backend/.env
+
+# Evals output (re-run to regenerate)
+evals/eval_results.json
+
+# OS
+.DS_Store

@@ -1,0 +1,60 @@
+{
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "check_availability",
+        "description": "Check Sriharsha's available interview slots for the next 7 days",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "days_ahead": {
+              "type": "integer",
+              "description": "Number of days to look ahead (default 7)",
+              "default": 7
+            }
+          },
+          "required": []
+        }
+      },
+      "server": {
+        "url": "https://YOUR_BACKEND_URL/api/availability",
+        "method": "GET"
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "book_slot",
+        "description": "Book an interview slot for the caller with Sriharsha",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Caller's full name"
+            },
+            "email": {
+              "type": "string",
+              "description": "Caller's email address"
+            },
+            "start_time": {
+              "type": "string",
+              "description": "ISO 8601 datetime string for the slot e.g. 2025-06-10T10:00:00+05:30"
+            },
+            "notes": {
+              "type": "string",
+              "description": "Any notes for the meeting",
+              "default": "Interview booking via AI voice agent"
+            }
+          },
+          "required": ["name", "email", "start_time"]
+        }
+      },
+      "server": {
+        "url": "https://YOUR_BACKEND_URL/api/book",
+        "method": "POST"
+      }
+    }
+  ]
+}
