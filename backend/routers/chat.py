@@ -32,7 +32,7 @@ async def chat(req: ChatRequest):
     history_str = format_history(req.history)
     messages = build_prompt(context, history_str, req.message)
     full_prompt = messages[0]["content"] + "\n\n" + messages[1]["content"]
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
     def generate():
         try:
@@ -55,7 +55,7 @@ async def chat_sync(req: ChatRequest):
         history_str = format_history(req.history)
         messages = build_prompt(context, history_str, req.message)
         full_prompt = messages[0]["content"] + "\n\n" + messages[1]["content"]
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.0-flash")
         resp = model.generate_content(full_prompt)
         return {
             "answer": resp.text,
