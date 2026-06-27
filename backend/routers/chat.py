@@ -2,16 +2,15 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import os, json
-from google import genai as google_genai
+import google.generativeai as genai
 from services.rag import retrieve, build_context
 from services.persona import build_prompt
 
 router = APIRouter()
 
-def get_model():
+def configure():
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-    client = google_genai.Client(api_key=api_key)
-    return client
+    genai.configure(api_key=api_key)
 
 class ChatRequest(BaseModel):
     message: str
@@ -27,19 +26,18 @@ def format_history(history):
 
 @router.post("/chat")
 async def chat(req: ChatRequest):
+    configure()
     chunks = retrieve(req.message, top_k=5)
     context = build_context(chunks)
     history_str = format_history(req.history)
     messages = build_prompt(context, history_str, req.message)
     full_prompt = messages[0]["content"] + "\n\n" + messages[1]["content"]
-    client = get_model()
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
     def generate():
         try:
-            for chunk in client.models.generate_content_stream(
-                model="gemini-1.5-flash",
-                contents=full_prompt
-            ):
+            response = model.generate_content(full_prompt, stream=True)
+            for chunk in response:
                 if chunk.text:
                     yield f"data: {json.dumps({'text': chunk.text})}\n\n"
         except Exception as e:
@@ -51,16 +49,14 @@ async def chat(req: ChatRequest):
 @router.post("/chat/sync")
 async def chat_sync(req: ChatRequest):
     try:
+        configure()
         chunks = retrieve(req.message, top_k=5)
         context = build_context(chunks)
         history_str = format_history(req.history)
         messages = build_prompt(context, history_str, req.message)
         full_prompt = messages[0]["content"] + "\n\n" + messages[1]["content"]
-        client = get_model()
-        resp = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=full_prompt
-        )
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        resp = model.generate_content(full_prompt)
         return {
             "answer": resp.text,
             "sources": [c["source"] for c in chunks],
