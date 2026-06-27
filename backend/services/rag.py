@@ -1,17 +1,8 @@
 import os
-import time
 from pinecone import Pinecone
-from google import genai
+import google.generativeai as genai
 
 _pinecone_index = None
-_genai_client = None
-
-def get_client():
-    global _genai_client
-    if _genai_client is None:
-        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        _genai_client = genai.Client(api_key=api_key)
-    return _genai_client
 
 def get_index():
     global _pinecone_index
@@ -21,12 +12,14 @@ def get_index():
     return _pinecone_index
 
 def embed(text: str) -> list:
-    client = get_client()
-    r = client.models.embed_content(
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    genai.configure(api_key=api_key)
+    result = genai.embed_content(
         model="models/gemini-embedding-001",
-        contents=text,
+        content=text,
+        task_type="retrieval_query"
     )
-    return r.embeddings[0].values
+    return result["embedding"]
 
 def retrieve(query: str, top_k: int = 5) -> list:
     vector = embed(query)
